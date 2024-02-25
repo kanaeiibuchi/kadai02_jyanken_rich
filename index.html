@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <link rel="stylesheet" href="css/sample.css">
+    <title>じゃんけんリッチ</title>
+</head>
+
+<body>
+    <header>
+        <h1>すごろくゲーム</h1>
+    </header>
+    <main>
+            <!-- <img id="saikoro" scr="./img.dice.png" onclick="openImg()"> -->
+            <!-- <img src="img/dice.png" width="80"> -->
+            <!-- <img src="./img.dice.png" alt="つられて回転" width="300"> -->
+            <div id="saikoro">
+                <button onclick="saikoro();">いざ！ポチっとな！！</button>
+                <button onclick="resetgame();"> リセット</button></div>
+            <div>あなたのサイコロ「<span id="my_saikoro">なに？</span>」</div>
+            <img src="" alt="" id="image_my">
+            <div>ＣＯＭのサイコロ「<span id="pc_saikoro">なに？</span>」</div>
+            <img src="" alt="" id="image_com">
+            <div>結果「<span id="dotti"></span>」</div>
+            <div id="judgment"></div>
+            <div id="board"></div>
+            <!-- <img id="me" src="img/dice.png" alt=""> -->
+            <!-- <img id="com" src="img/dice.png" alt=""> -->      
+            <!-- <div v-for ="cell in cells" :class=['cell',{events:events.includes(cell)}]> -->
+                <!-- {{ cell }} -->
+                <!-- <img v-for="chara" v-if="cell === character.position" :src="character.image" :alt="character.name"> -->
+            <!-- </div></div></div> --> 
+    </main>
+
+    <footer></footer>
+    <script>
+        let myposition =0;
+        let composition=24;
+
+        document.addEventListener('DOMContentLoaded', function () {
+        // kekkaをグローバルスコープで宣言
+        let kekka;
+
+    createBoard();
+            $("#saikoro").on("click", function () {
+            // サイコロ処理
+            saikoro();
+            updateBoard();
+            // プレイヤーコマをアニメーション
+            movePiece("#me", "left", 1 * kekka); // kekkaの値に応じて進む
+            // COMコマをアニメーション
+            movePiece("#com", "right", 1 * kekka); // kekkaの値に応じて進む
+            });
+            });
+    function createBoard() {
+            var board = document.getElementById('board');
+             while (board.firstChild){
+                 board.removeChild(board.firstChild)
+             }
+            for (var i = 0; i < 25; i++) {
+            var cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.textContent = i + 1;
+            if(i+1===13){
+                cell.classList.add("goal")
+            }
+            board.appendChild(cell);
+        }
+        var playerPiece = document.createElement('div');
+        playerPiece.id = 'me';
+        playerPiece.innerHTML = '<img src="img/dice.png" alt="あなた">';
+        board.children[myposition].appendChild(playerPiece);
+
+        var comPiece = document.createElement('div');
+        comPiece.id = 'com';
+        comPiece.innerHTML = '<img src="img/dice.png" alt="COM">';
+        board.children[composition].appendChild(comPiece);
+    }
+
+    function saikoro() {
+            // //  １．さいころボタンクリックしたら処理をする
+                 $("#saikoro").on("click", function () {
+                 console.log("さいころクリック")
+            //  ２．自分さいころ123456のどれかをランダムで作って変数にいれる
+                const my_saikoro = Math.floor(Math.random() * 6) + 1
+                console.log(my_saikoro)
+                $("#my_saikoro").text(my_saikoro)
+                let img1 = document.getElementById("image_my");
+                img1.src= "img/"+ my_saikoro +".jpg";
+            //  ３．ＰＣさいころ123456のどれかをランダムで作って変数にいれる
+                const pc_saikoro = Math.floor(Math.random() * 6) + 1
+                console.log(pc_saikoro)
+                $("#pc_saikoro").text(pc_saikoro)
+                let img2 = document.getElementById("image_com");
+                img2.src= "img/"+ pc_saikoro +".jpg";
+            //  ４．条件分岐で勝ち負けを決める
+                let kekka = my_saikoro - pc_saikoro
+                console.log(kekka)
+            //  ４．１ 動かない：お互いのサイコロの目が同じとき
+                if (kekka === 0) {
+                    //  画面に勝敗を表示
+                    $("#dotti").text("引き分け")
+                }
+            //  ４．２ 自分うごく：my_saikoroの目が大きいとき
+                else if (0 < kekka) {
+                    myposition += my_saikoro
+                    $("#dotti").text("あなたが"+ kekka +"マス進む")
+                }
+            //  ４．３ PCうごく：my_saikoroのの目が小さいとき
+                else {
+                    composition -= pc_saikoro
+                    $("#dotti").text("COMが" +kekka+"マス進む")
+                }})
+                if(myposition >= 13 || composition <= 13)
+                resetgame();
+                return;
+                // $("#judgment").text("ゲームセット")
+            updateBoard()
+            }
+    function updateBoard() {
+            var cells = document.getElementsByClassName('cell');
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].classList.remove('active');
+            }
+            document.getElementById('me').remove();
+            document.getElementById('com').remove();
+
+            var playerPiece = document.createElement('div');
+            playerPiece.id = 'me';
+            playerPiece.innerHTML = '<img src="img/dice.png" alt="あなた">';
+            cells[myposition].appendChild(playerPiece);
+
+            var comPiece = document.createElement('div');
+            comPiece.id = 'com';
+            comPiece.innerHTML = '<img src="img/dice.png" alt="COM">';
+            cells[composition].appendChild(comPiece);
+        }   
+    function movePiece(elementId, direction, distance) {
+            const element = document.querySelector(elementId);
+            let currentPosition = parseInt(element.style[direction]) || 0;
+            const targetPosition = currentPosition + distance;
+
+            const intervalId = setInterval(() => {
+                updateBoard();
+                currentPosition += (distance > 0) ? 1 : -1; // 1pxずつ進む
+                element.style[direction] = currentPosition + "px";
+
+                // アニメーション終了条件
+            if ((distance > 0 && currentPosition >= targetPosition) || (distance < 0 && currentPosition <= targetPosition)) {
+                clearInterval(intervalId);
+            }
+            // 画面外に出たらsetIntervalを停止
+            if (currentPosition > window.innerWidth) {
+                clearInterval(intervalId);
+            } 
+        }, 100); // 100ミリ秒ごとに移動
+    }
+        
+    function resetgame(){
+            myposition=0
+            composition=24
+            createBoard()
+            updateBoard()
+            $("#dotti").text("")
+    
+        }
+
+        // function saikoro() {
+        //     //  １．さいころボタンクリックしたら処理をする
+        //         $("#saikoro").on("click", function () {
+        //         console.log("さいころクリック")
+        //     //  ２．自分さいころ123456のどれかをランダムで作って変数にいれる
+        //         const my_saikoro = Math.floor(Math.random() * 6) + 1
+        //         console.log(my_saikoro)
+        //         $("#my_saikoro").text(my_saikoro)
+        //         let img1 = document.getElementById("image_my");
+        //         img1.src= "img/"+ my_saikoro +".jpg";
+        //     //  ３．ＰＣさいころ123456のどれかをランダムで作って変数にいれる
+        //         const pc_saikoro = Math.floor(Math.random() * 6) + 1
+        //         console.log(pc_saikoro)
+        //         $("#pc_saikoro").text(pc_saikoro)
+        //         let img2 = document.getElementById("image_com");
+        //         img2.src= "img/"+ pc_saikoro +".jpg";
+        //     //  ４．条件分岐で勝ち負けを決める
+        //         let kekka = my_saikoro - pc_saikoro
+        //         console.log(kekka)
+        //     //  ４．１ 動かない：お互いのサイコロの目が同じとき
+        //         if (kekka === 0) {
+        //             //  画面に勝敗を表示
+        //             $("#dotti").text("引き分け")
+        //         }
+        //     //  ４．２ 自分うごく：my_saikoroの目が大きいとき
+        //         else if (0 < kekka) {
+        //             myposition += my_saikoro
+        //             $("#dotti").text("あなたが"+ kekka +"マス進む")
+        //         }
+        //     //  ４．３ PCうごく：my_saikoroのの目が小さいとき
+        //         else {
+        //             composition -= pc_saikoro
+        //             $("#dotti").text("COMが" +kekka+"マス進む")
+        //         }
+        //         // // if (myposition >= 13 || composition < 12) {
+        //         //     alert('ゲーム終了');
+        //         //     return;}
+        //         updateBoard();
+        //     })
+        // }
+        // createBoard();
+        // updateBoard();
+                // ５．すごろく初期設定
+                // マスつくる
+
+
+                // cells:Array(25).fill().map((_,index) =>index +1)
+                // const me= document.querySelector("#me")
+                //   $("#me").position(1)                 
+                // 座標取得
+                // マス移動
+            
+                // const com= document.querySelector("#com")
+
+                //キャラクターを動かす
+                // var x = 0;
+                // document.getElementById('me').onclick = function () {
+                //     x += 32;
+                //     document.getElementById('me').style.top = y + "px";
+                // }
+
+         
+    </script>
+</body>
+
+</html>
